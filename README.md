@@ -1,2 +1,2 @@
-# dash
+# Dash
 Dashboard with Dash
