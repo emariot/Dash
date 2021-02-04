@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jan 27 02:46:30 2021
+Created on Thu Feb  4 00:54:46 2021
 
 @author: Mariot
 """
-
 import dash 
 import dash_core_components as dcc
 import dash_html_components as html
@@ -26,13 +25,13 @@ app.layout = html.Div([
         min=df['year'].min(),
         max=df['year'].max(),
         value=df['year'].min(),
-        marks={str(year): str(year) for year in df['year'].unique()},
+        marks={str(year):str(year) for year in df['year'].unique()},
         step=None
         )
+    
     ])
-
 @app.callback(
-    Output('graph-with-slider', 'figure'),
+    Output('graph-with-slider','figure'),
     Input('year-slider', 'value'))
 def update_figure(selected_year):
     filtered_df = df[df.year == selected_year]
