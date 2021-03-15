@@ -9,10 +9,15 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
+import pandas as pd
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+# Leitura dos dados
+
+df = pd.read_csv('dataset/historico_bioma.csv', encoding='latin-1')
 
 app.layout = html.Div([
     
@@ -62,9 +67,18 @@ app.layout = html.Div([
                        'fontFamily': 'Roboto',
                        'paddingTop': 15
                        }
-                   )
+                   ),
+           # Gráfico de disperção
+           dcc.Graph(
+               id='scatter-plot'
+               )
            
-           ])
+           ], style={
+               'paddingLeft': '10%',
+               'paddingRight': '10%',
+               'width': '80%',
+               'display':'inline-black'
+               })
        
         ])
     ])
@@ -74,7 +88,14 @@ app.layout = html.Div([
               [Input('biome-picker', 'value')])
 def update_title_scatter(selected_biome):
     return "Número de focos de queimadas por mês no bioma: " + str(selected_biome)
-                  
+
+# Atualiza o gráfico de dispersão 
+@app.callback(Output('scatter-plot', 'figure'),
+              [Input('biome-picker', 'value')])
+def update_scatter(selected_biome):
+    df_aux = df[df['Bioma']==selected_biome]
+    df_aux.reset_index(drop=True, inplace=True)
+    return pass                    
 
 
 if __name__ == '__main__':
