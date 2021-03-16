@@ -9,6 +9,8 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
+import plotly.offline as pyo
+import plotly.graph_objs as go
 import pandas as pd
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -18,6 +20,12 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # Leitura dos dados
 
 df = pd.read_csv('dataset/historico_bioma.csv', encoding='latin-1')
+
+# Criando uma variável para armazenar os estados
+
+biome_options = []
+for biome in df['Bioma'].unique():
+    biome_options.append({'label': biome, 'value': biome})
 
 app.layout = html.Div([
     
@@ -44,11 +52,9 @@ app.layout = html.Div([
             html.Label("Selecione um bioma: "),
             dcc.Dropdown(
                 id='biome-picker',
-            
-                 options = [{'label': 'Amazônia', 'value':'Amazônia'},
-                            {'label': 'Pampa', 'value':'Pampa'},
-                            {'label': 'Pantanal', 'value':'Pantanal'}],
+                 options = biome_options,
                  value='Amazônia',
+                 clearable=False
                  ),
       
         
@@ -95,7 +101,33 @@ def update_title_scatter(selected_biome):
 def update_scatter(selected_biome):
     df_aux = df[df['Bioma']==selected_biome]
     df_aux.reset_index(drop=True, inplace=True)
-    return pass                    
+    
+    tr = []
+    for i in range(df_aux.shape[0]):
+        tr.append(go.Scatter(
+            x=df_aux.columns.values[1:13],
+            y=df_aux.loc[i][1:13],
+            mode = 'lines+markers',
+            name= str(df_aux['Ano'][i]),
+            hovertemplate=df_aux.columns.values[1:13] + ' de ' + str(df_aux['Ano'][i]) 
+            + '<br>nº de focos: ' + [str(i) for i in list(df_aux.loc[i][1:13])]
+            ))
+    
+    return{
+        'data':tr,
+        'layout': go.Layout(
+            showlegend=True,
+            hovermode='closest',
+            hoverlabel=dict(
+                bgcolor="white",
+                font_size=16,
+                font_family="Roboto"
+                ),
+            xaxis=dict(title='Meses', linecolor='rgba(0,0,0,1)'),
+            yaxis=dict(title='Número de focos de queimadas', linecolor='rgba(0,0,0,1)')
+            
+            )
+        }            
 
 
 if __name__ == '__main__':
