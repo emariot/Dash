@@ -61,7 +61,7 @@ app.layout = html.Div([
         ], style={'width': '33%',
                   'display':'inline-block'}),
      
-       # Gráfico
+       # Gráfico Dispersão
        
        html.Div([
            
@@ -84,7 +84,33 @@ app.layout = html.Div([
                'paddingRight': '10%',
                'width': '80%',
                'display':'inline-black'
+               }),
+       
+       # Gráfico de Barra
+       
+       html.Div([
+           
+           # Título do Gráfico
+           
+           html.H3(id='titulo-barplot',
+                   style={
+                       'textAlign': 'center',
+                       'fontFamily': 'Roboto',
+                       'paddingTop': 10
+                       }
+                   ),
+           # Gráfico de barras
+           dcc.Graph(
+               id='bar-plot'
+               )
+           
+           ], style={
+               'paddingLeft': '10%',
+               'paddingRight': '10%',
+               'width': '80%',
+               'display':'inline-black'
                })
+            
        
         ])
     ])
@@ -94,6 +120,12 @@ app.layout = html.Div([
               [Input('biome-picker', 'value')])
 def update_title_scatter(selected_biome):
     return "Número de focos de queimadas por mês no bioma: " + str(selected_biome)
+
+# Atualiza o título do gráfico de barras                  
+@app.callback(Output('titulo-barplot', 'children'),
+              [Input('biome-picker', 'value')])
+def update_title_barplot(selected_biome):
+    return "Número TOTAL de focos de queimadas por ano durante todo o período no bioma: " + str(selected_biome)
 
 # Atualiza o gráfico de dispersão 
 @app.callback(Output('scatter-plot', 'figure'),
@@ -129,6 +161,32 @@ def update_scatter(selected_biome):
             )
         }            
 
+# Atualiza o gráfico de barras
+@app.callback(Output('bar-plot', 'figure'),
+              [Input('biome-picker', 'value')])
+def update_bar_plot(selected_biome):
+    df_aux = df[df['Bioma']==selected_biome]
+    df_aux.reset_index(drop=True, inplace=True)
+    
+    tr =[go.Bar(
+        x=df_aux['Ano'],
+        y=df_aux['Total'],
+        name = selected_biome,
+        hovertemplate=['Total de focos de queimadas: ' + i for i in [str(i) for i in (df_aux['Total'])]],
+        )]
+    return{
+        'data': tr,
+        'layout': go.Layout(
+            xaxis = dict(title = 'Anos', linecolor='rgba(0,0,0,1)', tickmode='array', tickvals= df_aux['Ano'], ticktext=df_aux['Ano']),
+            yaxis = dict(title ='Total de queimadas por ano', linecolor='rgba(0,0,0,1)', tickformat=False),
+            showlegend=True,
+            hoverlabel=dict(bgcolor='white',
+                            font_size=16,
+                            font_family='Roboto')
+            
+            )
+        
+        }
 
 if __name__ == '__main__':
     app.run_server(debug=True) 
