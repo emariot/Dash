@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Spyder Editor
-
 This is a temporary script file.
 """
 
@@ -109,7 +108,47 @@ app.layout = html.Div([
                'paddingRight': '10%',
                'width': '80%',
                'display':'inline-black'
-               })
+               }),
+    
+      # Gráfico de Pizza
+       
+       html.Div([
+           
+           # Título do Gráfico de pizza
+           
+           html.H3(id='titulo-pie',
+                   style={
+                       'textAlign': 'center',
+                       'fontFamily': 'Roboto',
+                       'paddingTop': 10
+                       }
+                   ),
+           # Gráfico de pizza
+           dcc.Graph(
+               id='pie-plot'
+               )
+           
+           ], style={
+               'paddingLeft': '10%',
+               'paddingRight': '10%',
+               'width': '80%',
+               'display':'inline-black'
+               }),
+    # Referencia
+    html.Div([
+        html.Label(["Fonte: ",
+                html.A('queimadas.dgi.inpe.br',
+                       href='http://queimadas.dgi.inpe.br/queimadas/portal-static/estatisticas_estados/'),
+                        ". Acesso em 27/01/2021"
+                   ]),
+        html.Label([
+            html.P(["Desenvolvido por Anderson Canteli (andersonmdcanteli@gmail.com)"])
+        ])
+            ], style={'textAlign': 'center',
+                       'fontFamily' : "Roboto",
+                       'paddingTop': 15
+                      }
+    )
             
        
         ])
@@ -126,6 +165,12 @@ def update_title_scatter(selected_biome):
               [Input('biome-picker', 'value')])
 def update_title_barplot(selected_biome):
     return "Número TOTAL de focos de queimadas por ano durante todo o período no bioma: " + str(selected_biome)
+
+# Atualiza o título do gráfico de pizza                  
+@app.callback(Output('titulo-pie', 'children'),
+              [Input('biome-picker', 'value')])
+def update_title_pie(selected_biome):
+    return "Percentual TOTAL de focos de queimadas por ano durante todo o período no bioma: " + str(selected_biome)
 
 # Atualiza o gráfico de dispersão 
 @app.callback(Output('scatter-plot', 'figure'),
@@ -184,6 +229,34 @@ def update_bar_plot(selected_biome):
                             font_size=16,
                             font_family='Roboto')
             
+            )
+        
+        }
+# Atualiza o gráfico de pizza
+@app.callback(Output('pie-plot', 'figure'),
+              [Input('biome-picker', 'value')])
+def update_pie_plot(selected_biome):
+    df_aux = df[df['Bioma']==selected_biome]
+    df_aux.reset_index(drop=True, inplace=True)
+    
+    tr =[go.Pie(
+        labels = df_aux['Ano'],
+        values = df_aux['Total'],
+        insidetextorientation = 'radial',
+        hole=.3,
+        )]
+    return{
+        'data': tr,
+        'layout': go.Layout(
+            annotations=[dict(
+                text = 'Total',
+                x = .5,
+                y = 0.5,
+                font_size=24,
+                font_family='Roboto',
+                showarrow = False
+                )]
+    
             )
         
         }
