@@ -9,7 +9,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
+import dash_bootstrap_components as boot
 import pandas as pd
 import numpy as np
 import plotly.offline as pyo
@@ -18,28 +18,44 @@ import json
 import dash_table
 from dash_table.Format import Format, Group, Scheme, Symbol
 
-df = pd.read_csv('dataset/historico_bioma_estados.csv', encoding='latin-1')
+app = dash.Dash()
+app = dash.Dash(external_stylesheets=[boot.themes.BOOTSTRAP, boot.themes.GRID])
 
-with open('dataset/estados_brasil.geojson') as data:
-    limites_brasil = json.load(data)
-    
-for feature in limites_brasil ['features']:
-    feature['id'] = feature['properties']['name']
-    
-fig = px.choropleth_mapbox(
-    df,
-    locations = 'UF',
-    geojson = limites_brasil,
-    color = 'Total',
-    mapbox_style="carto-positron",
-    center = {'lon':-55, 'lat':-14},
-    zoom =3,
-    #opacity = 0.5,
-    hover_data = { 'UF': False},
-    hover_name= "UF",
-    color_continuous_scale='reds',
-    range_color = [0, df['Total'].max()],
-    # animation_frame = "Ano"
-    )
-fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-pyo.offline.plot(fig,filename='mapa-01.html')
+app.layout = html.Div([
+    html.Div( # Título Geral
+        boot.Row(
+            boot.Col(
+                html.H3("Histórico de queimadas no Brasil entre 1998 e 2020.")
+                
+                ), style = {
+                    'textAlign': 'center',
+                    'color': 'blue'
+                    }
+            ), style = {
+                'paddingTop': '20px',
+                'paddingBotton': '20px'
+                }
+        ), 
+    html.Div( # Dados do Mapa
+        [
+            boot.Row( # Título
+                 boot.Col(
+                     html.H3('Total de focos de queimadas identificados por Estado no ano de XXXX')
+                     ), style={'textAlign':'center',
+                               'paddingTop':'40px',
+                               'paddingBottom':'40px'}
+                ), 
+            boot.Row(), # Texto + Popover
+            boot.Row(), # Dropdown
+            boot.Row(), # Mapa + Tabela
+            
+            ]
+        ), 
+    html.Div(), # Dados Separados por região
+    html.Div(), # Dados separados por Estados
+    html.Div(), # Footer
+    ])
+
+
+if __name__ == '__main__':
+    app.run_server(debug = True, use_reloader = True)
