@@ -20,6 +20,9 @@ from dash_table.Format import Format, Group, Scheme, Symbol
 
 df = pd.read_csv('dataset/historico_bioma_estados.csv', encoding='latin-1')
 
+year_options = []
+for ano in df['Ano'].unique():
+    year_options.append({'label':str(ano), 'value': ano})
 
 app = dash.Dash()
 app = dash.Dash(external_stylesheets=[boot.themes.BOOTSTRAP, boot.themes.GRID])
@@ -43,13 +46,26 @@ app.layout = html.Div([
         [
             boot.Row( # Título
                  boot.Col(
-                     html.H3('Total de focos de queimadas identificados por Estado no ano de XXXX')
+                     html.H3(id='title-year')
                      ), style={'textAlign':'center',
                                'paddingTop':'40px',
                                'paddingBottom':'40px'}
                 ), 
             boot.Row(), # Texto + Popover
-            boot.Row(), # Dropdown
+            boot.Row( # Dropdown
+                boot.Col(
+                    dcc.Dropdown(
+                        id = 'year-picker',
+                        value = 2020,
+                        options = year_options,
+                        clearable = False,
+                        style = {'width': '50%'}
+                        ),
+                    
+                    ), style = {'paddinfTop': "5px",
+                                'paddingBottom': '10px',
+                                'paddingLeft': '10%'}
+                ), 
             boot.Row(), # Mapa + Tabela
             
             ]
@@ -59,7 +75,10 @@ app.layout = html.Div([
     html.Div(), # Footer
     ])
             
-
+@app.callback(Output('title-year', 'children'),
+              [Input('year-picker', 'value')])
+def update_mape(selected_year):
+    return "Total de focos de queimadas identificados por estado no ano de " + str(selected_year)
 
 if __name__ == '__main__':
     app.run_server(debug = True, use_reloader = True)
