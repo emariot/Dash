@@ -18,6 +18,9 @@ import json
 import dash_table
 from dash_table.Format import Format, Group, Scheme, Symbol
 
+df = pd.read_csv('dataset/historico_bioma_estados.csv', encoding='latin-1')
+
+
 app = dash.Dash()
 app = dash.Dash(external_stylesheets=[boot.themes.BOOTSTRAP, boot.themes.GRID])
 
@@ -55,6 +58,7 @@ app.layout = html.Div([
     html.Div(), # Dados separados por Estados
     html.Div(), # Footer
     ])
+            
 
 
 if __name__ == '__main__':
