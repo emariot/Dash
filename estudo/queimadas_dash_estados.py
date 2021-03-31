@@ -25,10 +25,9 @@ year_options = []
 for ano in df['Ano'].unique():
     year_options.append({'label':str(ano), 'value': ano})
 
-app = dash.Dash()
 app = dash.Dash(external_stylesheets=[boot.themes.BOOTSTRAP, boot.themes.GRID])
 
-app.layout = html.Div([
+app.layout = html.Div([ # Div Geral
     html.Div( # Título Geral
         boot.Row(
             boot.Col(
@@ -123,7 +122,18 @@ app.layout = html.Div([
                                 'paddingBottom': '10px',
                                 'paddingLeft': '10%'}
                 ), 
-            boot.Row(), # Mapa + Tabela
+            boot.Row( #Mapa + Tabela
+                [
+                    boot.Col(
+                        dcc.Graph() #Mapa
+                        ),
+                    boot.Col(
+                        
+                        html.Div() #Tabela
+                        )    
+                    ]
+                
+                ), 
             
             ]
         ), 
