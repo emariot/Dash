@@ -24,6 +24,12 @@ df_texto_ano = pd.read_csv('dataset/info-anos.csv',  encoding='latin-1', sep=';'
 year_options = []
 for ano in df['Ano'].unique():
     year_options.append({'label':str(ano), 'value': ano})
+    
+# Carregando dados de Geolocalização
+with open('dataset/estados_brasil.geojson') as response:
+    limites_brasil = json.load(response)
+for features in limites_brasil['features']:
+    features['id'] = features['properties']['name']    
 
 app = dash.Dash(external_stylesheets=[boot.themes.BOOTSTRAP, boot.themes.GRID])
 
@@ -124,12 +130,27 @@ app.layout = html.Div([ # Div Geral
                 ), 
             boot.Row( #Mapa + Tabela
                 [
-                    boot.Col(
-                        dcc.Graph() #Mapa
+                    boot.Col( #Mapa
+                        dcc.Graph(id='map-brazil'),
+                        width = 7,
+                        align = 'center',
+                        style = {
+                            'diaplay': 'inline-block',
+                            'paddingLeft': '2%',
+                            'paddingRight': '2%',
+                            }
                         ),
-                    boot.Col(
-                        
-                        html.Div() #Tabela
+                    boot.Col( #Tabela       
+                        html.Div(id = 'mapa-data-table'),
+                                 width = 5,
+                                 align ='center',
+                                 style = {
+                                     'display': 'inline-block',
+                                     'paddingLeft': '2%',
+                                     'paddingRight': '2%'
+                                     }
+                            
+                    
                         )    
                     ]
                 
@@ -170,3 +191,34 @@ def update_mape(selected_year):
 
 if __name__ == '__main__':
     app.run_server(debug = True, use_reloader = True)
+
+# Função para atualizar o mapa quando o usuário alterar o dropdown
+@app.callback(Output('map-brazil', 'figure'),
+              [Input('year-picker', 'value')])
+def update_map_brazil(selected_year):
+    df_ano = df[df['Ano']==selected_year]
+    
+    # Criando o mapa
+    fig = px.choropleth_mapbox(
+                                df_ano,
+                                locations = 'UF',
+                                geojson = limites_brasil,
+                                color = 'Total',
+                                mapbox_style= "carto-positron",
+                                center = {'lon':-55, 'lat':-14},
+                                zoom = 3,
+                                opacity = 1.0,
+                                haver_name = 'UF',
+                                color_continuous_scale='reds',
+                                range_color = [0, df['Total'].max()]
+                                )
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    
+    return fig
+
+
+
+
+
+
+
