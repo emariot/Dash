@@ -124,7 +124,7 @@ app.layout = html.Div([ # Div Geral
                         style = {'width': '50%'}
                         ),
                     
-                    ), style = {'paddinfTop': "5px",
+                    ), style = {'paddingTop': "5px",
                                 'paddingBottom': '10px',
                                 'paddingLeft': '10%'}
                 ), 
@@ -135,7 +135,7 @@ app.layout = html.Div([ # Div Geral
                         width = 7,
                         align = 'center',
                         style = {
-                            'diaplay': 'inline-block',
+                            'display': 'inline-block',
                             'paddingLeft': '2%',
                             'paddingRight': '2%',
                             }
@@ -151,7 +151,7 @@ app.layout = html.Div([ # Div Geral
                                      }
                             
                     
-                        )    
+                        ),    
                     ]
                 
                 ), 
@@ -162,6 +162,67 @@ app.layout = html.Div([ # Div Geral
     html.Div(), # Dados separados por Estados
     html.Div(), # Footer
     ])
+                  
+                                # Função para atualizar a tabela do mapa quando o usuário alterar o dropdown
+@app.callback(Output('mapa-data-table', 'children'),
+              [Input('year-picker', 'value')])
+def update_table_map(selected_year):
+    df_ano = df[df['Ano']==selected_year]
+    df_ano = df_ano.drop(['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro',
+                'Dezembro', 'Ano'], axis=1)
+    df_ano.sort_values(by='Total', inplace=True, ascending=False)
+    df_ano.reset_index(inplace=True, drop=True)
+    df_ano['Rank'] = df_ano.index
+    df_ano['Rank'] = df_ano['Rank'] + 1
+    df_ano = df_ano[['Rank', 'Total', 'UF', 'Regiao']]
+
+    return[
+       
+       dash_table.DataTable(
+           columns=[{"name": i, "id": i} for i in df_ano.columns],
+           data = df_ano.to_dict('records'),
+           fixed_rows={'headers': True},
+           style_table={'height':'400px', 'overflowY': 'auto'},
+           style_header={'textAlign':'center'},
+           style_cell={'textAlign': 'center', 'font-size': '14px'},
+           style_as_list_view=True,
+           style_data_conditional=[
+               {
+                   "if": {"state": "selected"},
+                   "backgroundColor": "rgba(205, 205, 205,0.3",
+                   "border": "inherit !important"
+                   
+                   }
+               
+               ],
+           
+           )
+       
+       ]
+                                
+# Função para atualizar o mapa quando o usuário alterar o dropdown
+@app.callback(Output('map-brazil', 'figure'),
+              [Input('year-picker', 'value')])
+def update_map_brazil(selected_year):
+    df_ano = df[df['Ano']==selected_year]
+    
+    # Criando o mapa
+    fig = px.choropleth_mapbox(
+                                df_ano,
+                                locations = 'UF',
+                                geojson = limites_brasil,
+                                color = 'Total',
+                                mapbox_style= "carto-positron",
+                                center = {'lon':-55, 'lat':-14},
+                                zoom = 3,
+                                opacity = 1.0,
+                                hover_name = 'UF',
+                                color_continuous_scale='reds',
+                                range_color = [0, df['Total'].max()]
+                                )
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    
+    return fig
 
 # Header para o popover do mapa
 @app.callback(Output('popover-header-mapa', 'children'),
@@ -191,31 +252,6 @@ def update_mape(selected_year):
 
 if __name__ == '__main__':
     app.run_server(debug = True, use_reloader = True)
-
-# Função para atualizar o mapa quando o usuário alterar o dropdown
-@app.callback(Output('map-brazil', 'figure'),
-              [Input('year-picker', 'value')])
-def update_map_brazil(selected_year):
-    df_ano = df[df['Ano']==selected_year]
-    
-    # Criando o mapa
-    fig = px.choropleth_mapbox(
-                                df_ano,
-                                locations = 'UF',
-                                geojson = limites_brasil,
-                                color = 'Total',
-                                mapbox_style= "carto-positron",
-                                center = {'lon':-55, 'lat':-14},
-                                zoom = 3,
-                                opacity = 1.0,
-                                haver_name = 'UF',
-                                color_continuous_scale='reds',
-                                range_color = [0, df['Total'].max()]
-                                )
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    
-    return fig
-
 
 
 
