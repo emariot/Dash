@@ -34,6 +34,28 @@ for features in limites_brasil['features']:
 app = dash.Dash(external_stylesheets=[boot.themes.BOOTSTRAP, boot.themes.GRID])
 
 app.layout = html.Div([ # Div Geral
+    html.Div(# Div para o modal
+        boot.Modal([
+                boot.ModalHeader("Aviso!", 
+                                 style= {'color':'red'}),
+                boot.ModalBody([
+                   html.Label("O mapa do Brasil pode demorar alguns segundos a mais para atualizar do que os demais gráficos em alguns navegadores."), 
+                   html.Br(),
+                   html.Label("Pedimos desculpas pelo incoveniênte!"),
+                   html.Label("\U0001F605")
+                    ]),
+                boot.ModalFooter(
+                    boot.Button(
+                        "Ok!",
+                        id="close-sm",
+                        className="ml-auto"
+                        )
+                    )
+                
+                ], id = 'modal', is_open = True, centered = True, style={'textAlign':'center'}
+                    
+                )        
+             ), 
     html.Div( # Título Geral
         boot.Row(
             boot.Col(
@@ -162,8 +184,9 @@ app.layout = html.Div([ # Div Geral
     html.Div(), # Dados separados por Estados
     html.Div(), # Footer
     ])
-                  
-                                # Função para atualizar a tabela do mapa quando o usuário alterar o dropdown
+                                                 
+                                
+# Função para atualizar a tabela do mapa quando o usuário alterar o dropdown
 @app.callback(Output('mapa-data-table', 'children'),
               [Input('year-picker', 'value')])
 def update_table_map(selected_year):
@@ -189,7 +212,7 @@ def update_table_map(selected_year):
            style_data_conditional=[
                {
                    "if": {"state": "selected"},
-                   "backgroundColor": "rgba(205, 205, 205,0.3",
+                   "backgroundColor": "rgba(205, 205, 205,0.3)",
                    "border": "inherit !important"
                    
                    }
@@ -223,6 +246,15 @@ def update_map_brazil(selected_year):
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     
     return fig
+
+# Modal                                
+@app.callback(Output('modal', 'is_open'),
+              [Input('close-sm', 'n_clicks')],
+              [State('modal', 'is_open')])
+def close_modal(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 
 # Header para o popover do mapa
 @app.callback(Output('popover-header-mapa', 'children'),
